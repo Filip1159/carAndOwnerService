@@ -24,7 +24,7 @@ public class CarController {
     private final IOwnerService ownerService;
 
     @GetMapping
-    Collection<CarWithOwners> getBooks() {
+    Collection<CarWithOwners> getCars() {
         return carService.getCarsWithOwners();
     }
 
@@ -33,8 +33,8 @@ public class CarController {
         return carService.getCar(id);
     }
 
-    @GetMapping("/author/{ownerId}")
-    List<Car> getByAuthorId(@PathVariable int ownerId) {
+    @GetMapping("/owner/{ownerId}")
+    List<Car> getByOwnerId(@PathVariable int ownerId) {
         return carService.getByOwnerId(ownerId);
     }
 

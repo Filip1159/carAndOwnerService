@@ -1,12 +1,15 @@
 package com.example.carandownerservice.service;
 
 import com.example.carandownerservice.exception.OwnerDoesNotExistException;
+import com.example.carandownerservice.model.CarWithOwners;
 import com.example.carandownerservice.model.Owner;
 import com.example.carandownerservice.model.OwnerDto;
+import com.example.carandownerservice.model.OwnerWithCars;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -27,10 +30,6 @@ public class OwnerService implements IOwnerService {
         ownerRepo.add(new Owner(8, "Anita", "Garczewska"));
         ownerRepo.add(new Owner(9, "Hanna", "Mazur"));
         ownerRepo.add(new Owner(10, "Zygmunt", "Mazur"));
-        ownerRepo.add(new Owner(11, "Zofia", "Kaźmierczak"));
-        ownerRepo.add(new Owner(12, "Patrycja", "Cieślak"));
-        ownerRepo.add(new Owner(13, "Rafał", "Dzikowicz"));
-        ownerRepo.add(new Owner(14, "Tomasz", "Kozłowski"));
     }
 
     @Override
@@ -44,6 +43,17 @@ public class OwnerService implements IOwnerService {
     @Override
     public List<Owner> getAll() {
         return ownerRepo;
+    }
+
+    @Override
+    public List<OwnerWithCars> getOwnersWithCars() {
+        return ownerRepo.stream()
+                .map(owner -> new OwnerWithCars(
+                        owner.getId(),
+                        owner.getName(),
+                        owner.getSurname(),
+                        ownershipService.getCarIdsForOwnerId(owner.getId())))
+                .toList();
     }
 
     @Override

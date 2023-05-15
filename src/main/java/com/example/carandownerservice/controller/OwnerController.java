@@ -1,7 +1,9 @@
 package com.example.carandownerservice.controller;
 
+import com.example.carandownerservice.model.Car;
 import com.example.carandownerservice.model.Owner;
 import com.example.carandownerservice.model.OwnerDto;
+import com.example.carandownerservice.model.OwnerWithCars;
 import com.example.carandownerservice.service.ICarService;
 import com.example.carandownerservice.service.IOwnerService;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +28,8 @@ public class OwnerController {
     }
 
     @GetMapping
-    List<Owner> getAll() {
-        return ownerService.getAll();
+    List<OwnerWithCars> getAll() {
+        return ownerService.getOwnersWithCars();
     }
 
     @GetMapping("/car/{carId}")
@@ -36,15 +38,28 @@ public class OwnerController {
     }
 
     @PostMapping
-    ResponseEntity<Owner> create(@RequestBody OwnerDto ownerDto) {
+    ResponseEntity<OwnerWithCars> create(@RequestBody OwnerDto ownerDto) {
         ownerDto.carIds().forEach(carService::getCar);  // validate all books exist
-        return ResponseEntity.status(CREATED).body(ownerService.create(ownerDto));
+        var createdOwner = ownerService.create(ownerDto);
+        var response = new OwnerWithCars(
+                createdOwner.getId(),
+                createdOwner.getName(),
+                createdOwner.getSurname(),
+                carService.getByOwnerId(createdOwner.getId()).stream().map(Car::getId).toList()
+        );
+        return ResponseEntity.status(CREATED).body(response);
     }
 
     @PutMapping("/{id}")
-    Owner update(@PathVariable int id, @RequestBody OwnerDto ownerDto) {
+    OwnerWithCars update(@PathVariable int id, @RequestBody OwnerDto ownerDto) {
         ownerDto.carIds().forEach(carService::getCar);  // validate all books exist
-        return ownerService.update(id, ownerDto);
+        var updatedOwner = ownerService.update(id, ownerDto);
+        return new OwnerWithCars(
+                updatedOwner.getId(),
+                updatedOwner.getName(),
+                updatedOwner.getSurname(),
+                carService.getByOwnerId(updatedOwner.getId()).stream().map(Car::getId).toList()
+        );
     }
 
     @DeleteMapping("/{id}")
