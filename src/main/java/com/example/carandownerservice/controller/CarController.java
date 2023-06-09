@@ -1,7 +1,6 @@
 package com.example.carandownerservice.controller;
 
-import com.example.carandownerservice.model.Car;
-import com.example.carandownerservice.model.CarRequest;
+import com.example.carandownerservice.model.CarDto;
 import com.example.carandownerservice.service.CarService;
 import com.example.carandownerservice.service.OwnerService;
 import lombok.RequiredArgsConstructor;
@@ -22,26 +21,26 @@ public class CarController {
     private final OwnerService ownerService;
 
     @GetMapping
-    List<Car> getCars() {
-        return carService.getCars();
+    List<CarDto> getCars() {
+        return carService.getCars().stream().map(CarDto::from).toList();
     }
 
     @GetMapping("/{id}")
-    Car getCar(@PathVariable("id") int id) {
-        return carService.getCar(id);
+    CarDto getCar(@PathVariable("id") int id) {
+        return CarDto.from(carService.getCar(id));
     }
 
     @PostMapping
-    ResponseEntity<Car> create(@RequestBody CarRequest carRequest) {
-        carRequest.ownerIds().forEach(ownerService::getById); // validate that all authors exist
-        var createdCar = carService.create(carRequest);
-        return ResponseEntity.status(CREATED).body(createdCar);
+    ResponseEntity<CarDto> create(@RequestBody CarDto carDto) {
+        carDto.ownerIds().forEach(ownerService::getById); // validate that all authors exist
+        var createdCar = carService.create(carDto);
+        return ResponseEntity.status(CREATED).body(CarDto.from(createdCar));
     }
 
     @PutMapping("/{id}")
-    Car update(@PathVariable int id, @RequestBody CarRequest carRequest) {
-        carRequest.ownerIds().forEach(ownerService::getById);  // check if all authors exist
-        return carService.update(id, carRequest);
+    CarDto update(@PathVariable int id, @RequestBody CarDto carDto) {
+        carDto.ownerIds().forEach(ownerService::getById);  // check if all authors exist
+        return CarDto.from(carService.update(id, carDto));
     }
 
     @DeleteMapping("/{id}")

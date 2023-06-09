@@ -1,6 +1,5 @@
 package com.example.carandownerservice.controller;
 
-import com.example.carandownerservice.model.Owner;
 import com.example.carandownerservice.model.OwnerDto;
 import com.example.carandownerservice.service.CarService;
 import com.example.carandownerservice.service.OwnerService;
@@ -22,26 +21,26 @@ public class OwnerController {
     private final CarService carService;
 
     @GetMapping("/{id}")
-    Owner getById(@PathVariable int id) {
-        return ownerService.getById(id);
+    OwnerDto getById(@PathVariable int id) {
+        return OwnerDto.from(ownerService.getById(id));
     }
 
     @GetMapping
-    List<Owner> getAll() {
-        return ownerService.getAll();
+    List<OwnerDto> getAll() {
+        return ownerService.getAll().stream().map(OwnerDto::from).toList();
     }
 
     @PostMapping
-    ResponseEntity<Owner> create(@RequestBody OwnerDto ownerDto) {
+    ResponseEntity<OwnerDto> create(@RequestBody OwnerDto ownerDto) {
         ownerDto.carIds().forEach(carService::getCar);  // validate all books exist
         var createdOwner = ownerService.create(ownerDto);
-        return ResponseEntity.status(CREATED).body(createdOwner);
+        return ResponseEntity.status(CREATED).body(OwnerDto.from(createdOwner));
     }
 
     @PutMapping("/{id}")
-    Owner update(@PathVariable int id, @RequestBody OwnerDto ownerDto) {
+    OwnerDto update(@PathVariable int id, @RequestBody OwnerDto ownerDto) {
         ownerDto.carIds().forEach(carService::getCar);  // validate all books exist
-        return ownerService.update(id, ownerDto);
+        return OwnerDto.from(ownerService.update(id, ownerDto));
     }
 
     @DeleteMapping("/{id}")

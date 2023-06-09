@@ -2,7 +2,7 @@ package com.example.carandownerservice.service;
 
 import com.example.carandownerservice.exception.CarDoesNotExistException;
 import com.example.carandownerservice.model.Car;
-import com.example.carandownerservice.model.CarRequest;
+import com.example.carandownerservice.model.CarDto;
 import com.example.carandownerservice.repo.CarRepo;
 import com.example.carandownerservice.repo.OwnerRepo;
 import jakarta.transaction.Transactional;
@@ -26,26 +26,26 @@ public class CarService {
     }
 
     @Transactional
-    public Car create(CarRequest carRequest) {
-        var owners = ownerRepo.findAllById(carRequest.ownerIds());
+    public Car create(CarDto carDto) {
+        var owners = ownerRepo.findAllById(carDto.ownerIds());
         var carToSave = Car.builder()
-                .brand(carRequest.brand())
-                .model(carRequest.model())
-                .year(carRequest.year())
-                .firstRegistration(carRequest.firstRegistration())
+                .brand(carDto.brand())
+                .model(carDto.model())
+                .year(carDto.year())
+                .firstRegistration(carDto.firstRegistration())
                 .owners(owners)
                 .build();
         return carsRepo.save(carToSave);
     }
 
     @Transactional
-    public Car update(int id, CarRequest carRequest) {
+    public Car update(int id, CarDto carDto) {
         var existingCar = getCar(id);
-        existingCar.setBrand(carRequest.brand());
-        existingCar.setModel(carRequest.model());
-        existingCar.setYear(carRequest.year());
-        existingCar.setFirstRegistration(carRequest.firstRegistration());
-        var owners = ownerRepo.findAllById(carRequest.ownerIds());
+        existingCar.setBrand(carDto.brand());
+        existingCar.setModel(carDto.model());
+        existingCar.setYear(carDto.year());
+        existingCar.setFirstRegistration(carDto.firstRegistration());
+        var owners = ownerRepo.findAllById(carDto.ownerIds());
         existingCar.setOwners(owners);
         carsRepo.save(existingCar);
         return existingCar;
