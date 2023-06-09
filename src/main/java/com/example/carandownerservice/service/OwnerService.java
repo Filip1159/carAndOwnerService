@@ -1,106 +1,56 @@
 package com.example.carandownerservice.service;
 
 import com.example.carandownerservice.exception.OwnerDoesNotExistException;
-import com.example.carandownerservice.model.CarWithOwners;
 import com.example.carandownerservice.model.Owner;
 import com.example.carandownerservice.model.OwnerDto;
-import com.example.carandownerservice.model.OwnerWithCars;
+import com.example.carandownerservice.repo.CarRepo;
+import com.example.carandownerservice.repo.OwnerRepo;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OwnerService implements IOwnerService {
-    private static final List<Owner> ownerRepo = new ArrayList<>();
-    private final IOwnershipService ownershipService;
+public class OwnerService {
+    private final OwnerRepo ownerRepo;
+    private final CarRepo carRepo;
 
-    static {
-        ownerRepo.add(new Owner(1, "Anna", "Kowalska"));
-        ownerRepo.add(new Owner(2, "Stanisław", "Lewandowski"));
-        ownerRepo.add(new Owner(3, "Henryk", "Rasiak"));
-        ownerRepo.add(new Owner(4, "Wanda", "Szatkowski"));
-        ownerRepo.add(new Owner(5, "Bolesław", "Pawłowicz"));
-        ownerRepo.add(new Owner(6, "Aleksandra", "Olkowicz"));
-        ownerRepo.add(new Owner(7, "Julian", "Wieczorek"));
-        ownerRepo.add(new Owner(8, "Anita", "Garczewska"));
-        ownerRepo.add(new Owner(9, "Hanna", "Mazur"));
-        ownerRepo.add(new Owner(10, "Zygmunt", "Mazur"));
-    }
-
-    @Override
     public Owner getById(int ownerId) {
-        return ownerRepo.stream()
-                .filter(owner -> owner.getId() == ownerId)
-                .findAny()
-                .orElseThrow(() -> new OwnerDoesNotExistException(ownerId));
+        return ownerRepo.findById(ownerId).orElseThrow(() -> new OwnerDoesNotExistException(ownerId));
     }
 
-    @Override
     public List<Owner> getAll() {
-        return ownerRepo;
+        return ownerRepo.findAll();
     }
 
-    @Override
-    public List<OwnerWithCars> getOwnersWithCars() {
-        return ownerRepo.stream()
-                .map(owner -> new OwnerWithCars(
-                        owner.getId(),
-                        owner.getName(),
-                        owner.getSurname(),
-                        ownershipService.getCarIdsForOwnerId(owner.getId())))
-                .toList();
-    }
-
-    @Override
-    public List<Owner> getByCarId(int carId) {
-        var ownerIdsForCar = ownershipService.getOwnerIdsForCarId(carId);
-        return ownerIdsForCar.stream()
-                .map(this::getById)
-                .toList();
-    }
-
-    @Override
+    @Transactional
     public Owner create(OwnerDto ownerDto) {
-        var newOwnerId = nextId();
-        var newOwner = new Owner(newOwnerId, ownerDto.name(), ownerDto.surname());
-        ownerRepo.add(newOwner);
-        ownerDto.carIds().forEach(bookId -> ownershipService.saveNewOwnership(newOwnerId, bookId));
-        return newOwner;
+        var cars = carRepo.findAllById(ownerDto.carIds());
+        var ownerToSave = Owner.builder()
+                .name(ownerDto.name())
+                .surname(ownerDto.surname())
+                .dateOfBirth(ownerDto.dateOfBirth())
+                .isPremiumCustomer(ownerDto.isPremiumCustomer())
+                .cars(cars)
+                .build();
+        return ownerRepo.save(ownerToSave);
     }
 
-    @Override
     public Owner update(int id, OwnerDto ownerDto) {
         var existingOwner = getById(id);
         existingOwner.setName(ownerDto.name());
         existingOwner.setSurname(ownerDto.surname());
-        var carsForExistingOwner = ownershipService.getCarIdsForOwnerId(id);
-        ownerDto.carIds().stream()  // add new cars
-                .filter(carId -> !carsForExistingOwner.contains(carId))
-                .forEach(carId -> ownershipService.saveNewOwnership(id, carId));
-        carsForExistingOwner.stream()  // delete old books
-                .filter(carId -> !ownerDto.carIds().contains(carId))
-                .forEach(carId -> ownershipService.deleteOwnership(id, carId));
+        existingOwner.setDateOfBirth(ownerDto.dateOfBirth());
+        existingOwner.setPremiumCustomer(ownerDto.isPremiumCustomer());
+        var cars = carRepo.findAllById(ownerDto.carIds());
+        existingOwner.setCars(cars);
+        ownerRepo.save(existingOwner);
         return existingOwner;
     }
 
-    @Override
     public void delete(int id) {
-        var existingOwner = getById(id);
-        ownershipService.getCarIdsForOwnerId(id).forEach(
-                carId -> ownershipService.deleteOwnership(id, carId)
-        );
-        ownerRepo.remove(existingOwner);
-    }
-
-    private int nextId() {
-        return ownerRepo.stream()
-                .map(Owner::getId)
-                .max(Comparator.comparingInt(id -> id))
-                .orElse(0) + 1;
+        ownerRepo.deleteById(id);
     }
 }

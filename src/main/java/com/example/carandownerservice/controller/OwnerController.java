@@ -1,11 +1,9 @@
 package com.example.carandownerservice.controller;
 
-import com.example.carandownerservice.model.Car;
 import com.example.carandownerservice.model.Owner;
 import com.example.carandownerservice.model.OwnerDto;
-import com.example.carandownerservice.model.OwnerWithCars;
-import com.example.carandownerservice.service.ICarService;
-import com.example.carandownerservice.service.IOwnerService;
+import com.example.carandownerservice.service.CarService;
+import com.example.carandownerservice.service.OwnerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +11,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/owner")
 public class OwnerController {
-    private final IOwnerService ownerService;
-    private final ICarService carService;
+    private final OwnerService ownerService;
+    private final CarService carService;
 
     @GetMapping("/{id}")
     Owner getById(@PathVariable int id) {
@@ -28,42 +27,26 @@ public class OwnerController {
     }
 
     @GetMapping
-    List<OwnerWithCars> getAll() {
-        return ownerService.getOwnersWithCars();
-    }
-
-    @GetMapping("/car/{carId}")
-    List<Owner> getByCarId(@PathVariable int carId) {
-        return ownerService.getByCarId(carId);
+    List<Owner> getAll() {
+        return ownerService.getAll();
     }
 
     @PostMapping
-    ResponseEntity<OwnerWithCars> create(@RequestBody OwnerDto ownerDto) {
+    ResponseEntity<Owner> create(@RequestBody OwnerDto ownerDto) {
         ownerDto.carIds().forEach(carService::getCar);  // validate all books exist
         var createdOwner = ownerService.create(ownerDto);
-        var response = new OwnerWithCars(
-                createdOwner.getId(),
-                createdOwner.getName(),
-                createdOwner.getSurname(),
-                carService.getByOwnerId(createdOwner.getId()).stream().map(Car::getId).toList()
-        );
-        return ResponseEntity.status(CREATED).body(response);
+        return ResponseEntity.status(CREATED).body(createdOwner);
     }
 
     @PutMapping("/{id}")
-    OwnerWithCars update(@PathVariable int id, @RequestBody OwnerDto ownerDto) {
+    Owner update(@PathVariable int id, @RequestBody OwnerDto ownerDto) {
         ownerDto.carIds().forEach(carService::getCar);  // validate all books exist
-        var updatedOwner = ownerService.update(id, ownerDto);
-        return new OwnerWithCars(
-                updatedOwner.getId(),
-                updatedOwner.getName(),
-                updatedOwner.getSurname(),
-                carService.getByOwnerId(updatedOwner.getId()).stream().map(Car::getId).toList()
-        );
+        return ownerService.update(id, ownerDto);
     }
 
     @DeleteMapping("/{id}")
-    void delete(@PathVariable int id) {
+    ResponseEntity<Void> delete(@PathVariable int id) {
         ownerService.delete(id);
+        return ResponseEntity.status(NO_CONTENT).build();
     }
 }
