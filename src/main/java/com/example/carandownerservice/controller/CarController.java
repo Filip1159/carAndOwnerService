@@ -30,6 +30,11 @@ public class CarController {
         return CarDto.from(carService.getCar(id));
     }
 
+    @GetMapping("/count")
+    int getCount() {
+        return carService.getCars().size();
+    }
+
     @PostMapping
     ResponseEntity<CarDto> create(@RequestBody CarDto carDto) {
         carDto.ownerIds().forEach(ownerService::getById); // validate that all authors exist

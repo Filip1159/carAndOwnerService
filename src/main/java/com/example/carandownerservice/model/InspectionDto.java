@@ -11,10 +11,15 @@ public record InspectionDto(
         int mileage,
         String comments,
         boolean isPositive,
-        int carId
+        Integer carId
 ) {
     public static InspectionDto from(Inspection inspection) {
-        return new InspectionDto(inspection.getId(), inspection.getDate(), inspection.getMileage(),
-                inspection.getComments(), inspection.isPositive(), inspection.getCar().getId());
+        return new InspectionDto(
+                inspection.getId(),
+                inspection.getDate(),
+                inspection.getMileage(),
+                inspection.getComments(),
+                inspection.isPositive(),
+                inspection.getCar() != null ? inspection.getCar().getId() : null);
     }
 }

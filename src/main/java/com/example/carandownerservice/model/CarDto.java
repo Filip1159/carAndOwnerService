@@ -15,7 +15,12 @@ public record CarDto(
         List<Integer> ownerIds
 ) {
     public static CarDto from(Car car) {
-        return new CarDto(car.getId(), car.getBrand(), car.getModel(), car.getYear(), car.getFirstRegistration(),
+        return new CarDto(
+                car.getId(),
+                car.getBrand(),
+                car.getModel(),
+                car.getYear(),
+                car.getFirstRegistration(),
                 car.getOwners().stream().map(Owner::getId).toList());
     }
 }

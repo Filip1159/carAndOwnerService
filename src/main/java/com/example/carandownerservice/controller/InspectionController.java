@@ -28,6 +28,11 @@ public class InspectionController {
         return InspectionDto.from(inspectionService.getById(id));
     }
 
+    @GetMapping("/count")
+    int getCount() {
+        return inspectionService.getAll().size();
+    }
+
     @PostMapping
     ResponseEntity<InspectionDto> create(@RequestBody InspectionDto inspectionDto) {
         var createdInspection = inspectionService.create(inspectionDto);

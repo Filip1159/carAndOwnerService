@@ -5,10 +5,10 @@ import com.example.carandownerservice.model.Owner;
 import com.example.carandownerservice.model.OwnerDto;
 import com.example.carandownerservice.repo.CarRepo;
 import com.example.carandownerservice.repo.OwnerRepo;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service

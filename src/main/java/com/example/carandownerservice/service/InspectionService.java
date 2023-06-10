@@ -6,10 +6,10 @@ import com.example.carandownerservice.model.Inspection;
 import com.example.carandownerservice.model.InspectionDto;
 import com.example.carandownerservice.repo.CarRepo;
 import com.example.carandownerservice.repo.InspectionRepo;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service

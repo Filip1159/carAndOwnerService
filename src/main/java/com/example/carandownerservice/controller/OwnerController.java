@@ -30,6 +30,11 @@ public class OwnerController {
         return ownerService.getAll().stream().map(OwnerDto::from).toList();
     }
 
+    @GetMapping("/count")
+    int getCount() {
+        return ownerService.getAll().size();
+    }
+
     @PostMapping
     ResponseEntity<OwnerDto> create(@RequestBody OwnerDto ownerDto) {
         ownerDto.carIds().forEach(carService::getCar);  // validate all books exist
